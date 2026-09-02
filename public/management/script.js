@@ -2,7 +2,8 @@ let reservationData = []; // 取得したデータを保持
 
 // 初期ロード
 async function loadReservations() {
-    const res = await fetch("/api/reserve");   // ← Vercel API に変更
+    const res = await fetch("https://unafujireservation.vercel.app/api/reserve");
+   // ← Vercel API に変更
     reservationData = await res.json();
     renderTable(reservationData);
 

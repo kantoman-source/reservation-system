@@ -56,7 +56,8 @@
 
   // ▼ 空き状況 API（Vercel 用）
   async function loadAvailability(date) {
-    const res = await fetch(`/api/reserve?date=${date}`);
+    const res = await fetch("https://unafujireservation.vercel.app/api/reserve?date=" + date);
+
     return await res.json();
   }
 
@@ -178,14 +179,16 @@
     formData.date = selectedDate;
     formData.time = selectedTime;
 
-    const res = await fetch("/api/reserve", {
+    const res = await fetch("https://unafujireservation.vercel.app/api/reserve", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)
-    });
+  });
+
 
     const result = await res.json();
-    window.location.href = `complete.html?id=${result.id}`;
+    window.location.href = "https://unafujireservation.vercel.app/custumer/complete.html?id=" + result.id;
+
   });
 </script>
 
