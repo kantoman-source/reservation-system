@@ -1,14 +1,12 @@
 {
   "version": 2,
   "functions": {
-    "api/reserve.ts": {
-      "runtime": "nodejs18.x"
-    },
-    "api/db.ts": {
-      "runtime": "nodejs18.x"
-    }
+    "api/reserve.ts": { "runtime": "nodejs18.x" },
+    "api/db.ts": { "runtime": "nodejs18.x" }
   },
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" }
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/custumer/(.*)", "dest": "/custumer/$1" },
+    { "src": "/management/(.*)", "dest": "/management/$1" }
   ]
 }
