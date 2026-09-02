@@ -1,0 +1,66 @@
+body {
+    font-family: sans-serif;
+    margin: 20px;
+    background: #f7f7f7;
+}
+
+header h1 {
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #eee;
+}
+
+#sort-area {
+    margin-bottom: 15px;
+}
+
+#sort-select {
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+/* ストライプ表示 */
+#reservation-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+#reservation-table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+/* ヘッダーの区切り線 */
+#reservation-table thead th {
+    border-right: 2px solid #333;
+    border-bottom: 2px solid #333;
+    padding: 10px;
+    background-color: #fafafa;
+}
+
+/* 最後の項目だけ右線を消す */
+#reservation-table thead th:last-child {
+    border-right: none;
+}
+
+/* セルの区切り線 */
+#reservation-table td {
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #eee;
+    padding: 8px;
+}
+
+/* 最後のセルだけ右線を消す */
+#reservation-table td:last-child {
+    border-right: none;
+}

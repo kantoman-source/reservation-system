@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>予約ページ</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    td.slot { cursor: pointer; }
+    td.available { background: #e6ffe6; }
+    td.unavailable { background: #ffe6e6; color: #999; cursor: not-allowed; }
+    td.selected { background: #28a745; color: white; }
+  </style>
+</head>
+<body>
+
+<h1>予約ページ</h1>
+
+<h2>
+  <button id="prevMonth">◀︎</button>
+  <span id="monthLabel"></span>
+  <button id="nextMonth">▶︎</button>
+</h2>
+
+<table id="calendarTable"></table>
+
+<h2>予約フォーム</h2>
+<form id="reserveForm">
+  <input name="name" placeholder="名前" required><br><br>
+  <input name="people" type="number" placeholder="人数" required><br><br>
+  <input name="phone" placeholder="電話番号" required><br><br>
+  <input name="email" type="email" placeholder="メール" required><br><br>
+
+  <input name="date" id="selectedDate" type="hidden">
+  <input name="time" id="selectedTime" type="hidden">
+
+  <button type="submit">予約する</button>
+</form>
+
+<script>
+  // 時間（縦軸）
+  const hours = [];
+  for (let h = 11; h <= 22; h++) {
+    hours.push(`${String(h).padStart(2, "0")}:00`);
+  }
+
+  // 選択セルデータ格納用
+  let selectedDate = null;
+  let selectedTime = null;
+
+  // 今日の年月
+  const today = new Date();
+  const thisYear = today.getFullYear();
+  const thisMonth = today.getMonth() + 1;
+
+  // ▼ 空き状況 API（Vercel 用）
+  async function loadAvailability(date) {
+    const res = await fetch(`/api/reserve?date=${date}`);
+    return await res.json();
+  }
+
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth() + 1;
+
+  function updateMonthLabel() {
+    document.getElementById("monthLabel").textContent =
+      `${currentYear}年 ${currentMonth}月`;
+  }
+
+  let isSwitchingMonth = false;
+
+  function changeMonth(diff) {
+    if (isSwitchingMonth) return;
+    isSwitchingMonth = true;
+
+    // ▼ 過去に戻ろうとしている場合はブロック
+    if (diff === -1) {
+      if (currentYear === thisYear && currentMonth === thisMonth) {
+        isSwitchingMonth = false;
+        return;
+      }
+    }
+
+    currentMonth += diff;
+
+    if (currentMonth === 0) {
+      currentMonth = 12;
+      currentYear--;
+    }
+    if (currentMonth === 13) {
+      currentMonth = 1;
+      currentYear++;
+    }
+
+    updateMonthLabel();
+
+    generateCalendarTable().then(() => {
+      isSwitchingMonth = false;
+    });
+  }
+
+  async function generateCalendarTable() {
+    const table = document.getElementById("calendarTable");
+
+    const today = new Date();
+    const year = currentYear;
+    const month = currentMonth - 1;
+    const days = new Date(currentYear, currentMonth, 0).getDate();
+
+    // ヘッダー（日付）
+    let header = "<tr><th>時間</th>";
+    const dateList = [];
+
+    for (let d = 1; d <= days; d++) {
+      const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      dateList.push(date);
+      header += `<th>${month + 1}/${d}</th>`;
+    }
+    header += "</tr>";
+    table.innerHTML = header;
+
+    // 行（時間）
+    for (const time of hours) {
+      let row = `<tr><td>${time}</td>`;
+
+      for (const date of dateList) {
+        const availability = await loadAvailability(date);
+        let status = availability[time];
+
+        const cellDate = new Date(date);
+
+        if (cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+          status = "×"; // 過去日は強制で ×
+        }
+
+        const className = status === "○" ? "available" : "unavailable";
+        const clickable = status === "○" ? "slot" : "";
+
+        row += `
+          <td class="${clickable} ${className}"
+              data-date="${date}"
+              data-time="${time}">
+              ${status}
+          </td>`;
+      }
+
+      row += "</tr>";
+      table.innerHTML += row;
+    }
+
+    // クリックイベント
+    document.querySelectorAll("td.slot.available").forEach(cell => {
+      cell.onclick = () => {
+        document.querySelectorAll("td.slot").forEach(el => el.classList.remove("selected"));
+        cell.classList.add("selected");
+
+        selectedDate = cell.dataset.date;
+        selectedTime = cell.dataset.time;
+
+        console.log("選択された日付:", selectedDate);
+        console.log("選択された時間:", selectedTime);
+      };
+    });
+  }
+
+  generateCalendarTable();
+
+  // 月変更
+  document.getElementById("prevMonth").onclick = () => changeMonth(-1);
+  document.getElementById("nextMonth").onclick = () => changeMonth(1);
+
+  // 予約送信（Vercel 用）
+  document.getElementById("reserveForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = Object.fromEntries(new FormData(e.target));
+    formData.date = selectedDate;
+    formData.time = selectedTime;
+
+    const res = await fetch("/api/reserve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
+
+    const result = await res.json();
+    window.location.href = `complete.html?id=${result.id}`;
+  });
+</script>
+
+</body>
+</html>

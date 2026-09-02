@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>予約管理画面</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>予約一覧（管理画面）</h1>
+    </header>
+
+    <main>
+
+        <!-- 並べ替えプルダウン -->
+        <div id="sort-area">
+            <label for="sort-select">並べ替え：</label>
+            <select id="sort-select">
+                <option value="created_at">予約完了日時順</option>
+                <option value="datetime">日時順</option>
+            </select>
+        </div>
+
+        <table id="reservation-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>名前</th>
+                    <th>人数</th>
+                    <th>日付</th>
+                    <th>時間</th>
+                    <th>電話番号</th>
+                    <th>予約日時</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JSで埋め込む -->
+            </tbody>
+        </table>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
