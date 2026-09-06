@@ -102,68 +102,83 @@
   }
 
   async function generateCalendarTable() {
-    const table = document.getElementById("calendarTable");
+  const table = document.getElementById("calendarTable");
 
-    const today = new Date();
-    const year = currentYear;
-    const month = currentMonth - 1;
-    const days = new Date(currentYear, currentMonth, 0).getDate();
+  const today = new Date();
+  const year = currentYear;
+  const month = currentMonth - 1;
+  const days = new Date(currentYear, currentMonth, 0).getDate();
 
-    // ヘッダー（日付）
-    let header = "<tr><th>時間</th>";
-    const dateList = [];
+  // 月まとめAPIを1回だけ呼ぶ
+  const monthStr = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
+  const reservations = await fetch(`/api/reserve?month=${monthStr}`).then(res => res.json());
 
-    for (let d = 1; d <= days; d++) {
-      const date = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      dateList.push(date);
-      header += `<th>${month + 1}/${d}</th>`;
-    }
-    header += "</tr>";
-    table.innerHTML = header;
+  // 予約を高速検索できるようにセット化
+  const reservedSet = new Set(reservations.map(r => `${r.date}_${r.time}`));
 
-    // 行（時間）
-    for (const time of hours) {
-      let row = `<tr><td>${time}</td>`;
+  // ヘッダー（日付）
+  let header = "<tr><th>時間</th>";
+  const dateList = [];
 
-      for (const date of dateList) {
-        const availability = await loadAvailability(date);
-        let status = availability[time];
+  for (let d = 1; d <= days; d++) {
+    const date = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    dateList.push(date);
+    header += `<th>${month + 1}/${d}</th>`;
+  }
+  header += "</tr>";
+  table.innerHTML = header;
 
-        const cellDate = new Date(date);
+  // 行（時間）
+  for (const time of hours) {
+    let row = `<tr><td>${time}</td>`;
 
-        if (cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
-          status = "×"; // 過去日は強制で ×
-        }
+    for (const date of dateList) {
+      const cellDate = new Date(date);
+      let status;
 
-        const className = status === "○" ? "available" : "unavailable";
-        const clickable = status === "○" ? "slot" : "";
-
-        row += `
-          <td class="${clickable} ${className}"
-              data-date="${date}"
-              data-time="${time}">
-              ${status}
-          </td>`;
+      // ① 過去日は ×
+      if (cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+        status = "×";
+      } else {
+        // ② 未来日は ○
+        status = "○";
       }
 
-      row += "</tr>";
-      table.innerHTML += row;
+      // ③ 予約がある場合は × に上書き
+      if (reservedSet.has(`${date}_${time}`)) {
+        status = "×";
+      }
+
+      const className = status === "○" ? "available" : "unavailable";
+      const clickable = status === "○" ? "slot" : "";
+
+      row += `
+        <td class="${clickable} ${className}"
+            data-date="${date}"
+            data-time="${time}">
+            ${status}
+        </td>`;
     }
 
-    // クリックイベント
-    document.querySelectorAll("td.slot.available").forEach(cell => {
-      cell.onclick = () => {
-        document.querySelectorAll("td.slot").forEach(el => el.classList.remove("selected"));
-        cell.classList.add("selected");
-
-        selectedDate = cell.dataset.date;
-        selectedTime = cell.dataset.time;
-
-        console.log("選択された日付:", selectedDate);
-        console.log("選択された時間:", selectedTime);
-      };
-    });
+    row += "</tr>";
+    table.innerHTML += row;
   }
+
+  // クリックイベント
+  document.querySelectorAll("td.slot.available").forEach(cell => {
+    cell.onclick = () => {
+      document.querySelectorAll("td.slot").forEach(el => el.classList.remove("selected"));
+      cell.classList.add("selected");
+
+      selectedDate = cell.dataset.date;
+      selectedTime = cell.dataset.time;
+
+      console.log("選択された日付:", selectedDate);
+      console.log("選択された時間:", selectedTime);
+    };
+  });
+}
+
 
   generateCalendarTable();
 

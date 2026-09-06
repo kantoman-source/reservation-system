@@ -28,6 +28,23 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // -------------------------
+// GET /api/reserve?month=2026-10 → 月まとめAPI
+// -------------------------
+if (method === 'GET' && query.month) {
+  const month = query.month as string; 
+
+  const stmt = db.prepare(`
+    SELECT date, time
+    FROM reservations
+    WHERE date LIKE ?
+  `);
+
+  const reservations = stmt.all(`${month}%`);
+
+  return res.status(200).json(reservations);
+}
+
+  // -------------------------
   // GET /api/reserve?date=2024-01-01 → 空き状況
   // -------------------------
   if (method === 'GET' && query.date) {
@@ -58,6 +75,20 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   if (method === 'POST') {
     const { name, people, date, time, phone } = body;
 
+     // ① 重複チェック
+    const checkStmt = db.prepare(`
+      SELECT COUNT(*) AS c
+      FROM reservations
+      WHERE date = ? AND time = ?
+    `);
+
+  const exists = checkStmt.get(date, time) as { c: number };
+
+  if (exists.c > 0) {
+    return res.status(409).json({ error: "その日時はすでに予約済みです" });
+  }
+
+  //予約のdb登録
     const stmt = db.prepare(`
       INSERT INTO reservations (name, people, date, time, phone)
       VALUES (?, ?, ?, ?, ?)
