@@ -194,6 +194,7 @@
     const formData = Object.fromEntries(new FormData(e.target));
     formData.date = selectedDate;
     formData.time = selectedTime;
+    formData.people = Number(formData.people);
 
     if (!selectedDate || !selectedTime) {
       alert("日付と時間を選択してください");
