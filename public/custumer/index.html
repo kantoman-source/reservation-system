@@ -195,6 +195,10 @@
     formData.date = selectedDate;
     formData.time = selectedTime;
 
+    if (!selectedDate || !selectedTime) {
+      alert("日付と時間を選択してください");
+      return;
+    }
     const res = await fetch("https://unafujireservation.vercel.app/api/reserve", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
