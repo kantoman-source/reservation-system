@@ -25,13 +25,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // GET /api/reserve?month=2026-10
-  if (method === 'GET' && query.month) {
-    const result = await db.query(
-      "SELECT date, time FROM reservations WHERE date LIKE $1",
-      [`${query.month}%`]
-    );
-    return res.status(200).json(result.rows);
-  }
+    if (method === 'GET' && query.month) {
+      const [year, month] = query.month.split('-').map(Number);
+
+      const result = await db.query(
+        "SELECT date, time FROM reservations WHERE EXTRACT(YEAR FROM date) = $1 AND EXTRACT(MONTH FROM date) = $2",
+        [year, month]
+      );
+
+      return res.status(200).json(result.rows);
+    }
+
 
   // GET /api/reserve?date=2026-10-01
   if (method === 'GET' && query.date) {
