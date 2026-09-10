@@ -5,7 +5,8 @@
     "dev": "vercel dev"
   },
   "dependencies": {
-    "better-sqlite3": "^13.0.3"
+    "better-sqlite3": "^13.0.3",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",

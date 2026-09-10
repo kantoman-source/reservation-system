@@ -1,48 +1,43 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { db } from './db';
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method, query, body } = req;
 
   // -------------------------
   // GET /api/reserve → 予約一覧
   // -------------------------
   if (method === 'GET' && !query.id && !query.date) {
-    const stmt = db.prepare("SELECT * FROM reservations ORDER BY created_at DESC");
-    const reservations = stmt.all();
-    return res.status(200).json(reservations);
+    const result = await db.query("SELECT * FROM reservations ORDER BY created_at DESC");
+    return res.status(200).json(result.rows);
   }
 
   // -------------------------
   // GET /api/reserve?id=123 → 予約1件取得
   // -------------------------
   if (method === 'GET' && query.id) {
-    const stmt = db.prepare("SELECT * FROM reservations WHERE id = ?");
-    const reservation = stmt.get(query.id);
+    const result = await db.query("SELECT * FROM reservations WHERE id = $1", [query.id]);
 
-    if (!reservation) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Reservation not found" });
     }
 
-    return res.status(200).json(reservation);
+    return res.status(200).json(result.rows[0]);
   }
 
   // -------------------------
-// GET /api/reserve?month=2026-10 → 月まとめAPI
-// -------------------------
-if (method === 'GET' && query.month) {
-  const month = query.month as string; 
+  // GET /api/reserve?month=2026-10 → 月まとめAPI
+  // -------------------------
+  if (method === 'GET' && query.month) {
+    const month = query.month as string;
 
-  const stmt = db.prepare(`
-    SELECT date, time
-    FROM reservations
-    WHERE date LIKE ?
-  `);
+    const result = await db.query(
+      "SELECT date, time FROM reservations WHERE date LIKE $1",
+      [`${month}%`]
+    );
 
-  const reservations = stmt.all(`${month}%`);
-
-  return res.status(200).json(reservations);
-}
+    return res.status(200).json(result.rows);
+  }
 
   // -------------------------
   // GET /api/reserve?date=2024-01-01 → 空き状況
@@ -58,12 +53,12 @@ if (method === 'GET' && query.month) {
     const result: Record<string, string> = {};
 
     for (const time of slots) {
-      const stmt = db.prepare(
-        "SELECT COUNT(*) AS c FROM reservations WHERE date = ? AND time = ?"
+      const count = await db.query(
+        "SELECT COUNT(*) AS c FROM reservations WHERE date = $1 AND time = $2",
+        [date, time]
       );
 
-      const count = stmt.get(date, time) as { c: number };
-      result[time] = count.c === 0 ? "○" : "×";
+      result[time] = Number(count.rows[0].c) === 0 ? "○" : "×";
     }
 
     return res.status(200).json(result);
@@ -75,32 +70,24 @@ if (method === 'GET' && query.month) {
   if (method === 'POST') {
     const { name, people, date, time, phone } = body;
 
-     // ① 重複チェック
-    const checkStmt = db.prepare(`
-      SELECT COUNT(*) AS c
-      FROM reservations
-      WHERE date = ? AND time = ?
-    `);
+    // 重複チェック
+    const exists = await db.query(
+      "SELECT COUNT(*) AS c FROM reservations WHERE date = $1 AND time = $2",
+      [date, time]
+    );
 
-  const exists = checkStmt.get(date, time) as { c: number };
+    if (Number(exists.rows[0].c) > 0) {
+      return res.status(409).json({ error: "その日時はすでに予約済みです" });
+    }
 
-  if (exists.c > 0) {
-    return res.status(409).json({ error: "その日時はすでに予約済みです" });
+    // 予約登録
+    const result = await db.query(
+      "INSERT INTO reservations (name, people, date, time, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+      [name, people, date, time, phone]
+    );
+
+    return res.status(200).json({ success: true, id: result.rows[0].id });
   }
 
-  //予約のdb登録
-    const stmt = db.prepare(`
-      INSERT INTO reservations (name, people, date, time, phone)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-
-    const result = stmt.run(name, people, date, time, phone);
-
-    return res.status(200).json({ success: true, id: result.lastInsertRowid });
-  }
-
-  // -------------------------
-  // その他は拒否
-  // -------------------------
   return res.status(405).send("Method Not Allowed");
 }
