@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { db } from './db'; // pg(Pool) を返す
+import { db } from './db'; // pg(Pool)
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method, query, body } = req;
@@ -25,17 +25,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // GET /api/reserve?month=2026-10
-    if (method === 'GET' && query.month) {
-      const [year, month] = query.month.split('-').map(Number);
+  if (method === 'GET' && query.month) {
+    const [year, month] = (query.month as string).split('-').map(Number);
 
-      const result = await db.query(
-        "SELECT date, time FROM reservations WHERE EXTRACT(YEAR FROM date) = $1 AND EXTRACT(MONTH FROM date) = $2",
-        [year, month]
-      );
+    const result = await db.query(
+      "SELECT date, time FROM reservations WHERE EXTRACT(YEAR FROM date) = $1 AND EXTRACT(MONTH FROM date) = $2",
+      [year, month]
+    );
 
-      return res.status(200).json(result.rows);
-    }
-
+    return res.status(200).json(result.rows);
+  }
 
   // GET /api/reserve?date=2026-10-01
   if (method === 'GET' && query.date) {
@@ -50,7 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     for (const time of slots) {
       const count = await db.query(
-        "SELECT COUNT(*) AS c FROM reservations WHERE date = $1 AND time = $2",
+        "SELECT COUNT(*) AS c FROM reservations WHERE date = CAST($1 AS DATE) AND time = $2",
         [date, time]
       );
       result[time] = Number(count.rows[0].c) === 0 ? "○" : "×";
@@ -65,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 重複チェック
     const exists = await db.query(
-      "SELECT COUNT(*) AS c FROM reservations WHERE date = $1 AND time = $2",
+      "SELECT COUNT(*) AS c FROM reservations WHERE date = CAST($1 AS DATE) AND time = $2",
       [date, time]
     );
 
@@ -75,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 登録
     const result = await db.query(
-      "INSERT INTO reservations (name, people, date, time, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+      "INSERT INTO reservations (name, people, date, time, phone) VALUES ($1, $2, CAST($3 AS DATE), $4, $5) RETURNING id",
       [name, people, date, time, phone]
     );
 
