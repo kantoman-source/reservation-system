@@ -84,9 +84,7 @@ import { db } from './db'; // pg(Pool)
 //   return res.status(405).send("Method Not Allowed");
 // }
 
-    export default async function handler(req, res) {
-      return res.status(200).json({
-      ok: true,
-    hasDbUrl: !!process.env.DATABASE_URL
-    });
+  export default async function handler(req, res) {
+    const result = await db.query('SELECT 1');
+    return res.status(200).json(result.rows);
   }
