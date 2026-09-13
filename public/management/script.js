@@ -3,7 +3,6 @@ let reservationData = []; // 取得したデータを保持
 // 初期ロード
 async function loadReservations() {
     const res = await fetch("https://unafujireservation.vercel.app/api/reserve");
-   // ← Vercel API に変更
     reservationData = await res.json();
     renderTable(reservationData);
 
@@ -22,7 +21,14 @@ function renderTable(data) {
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${r.id}</td>
+            <td>             
+                <button class="visited-btn"
+                    onclick="markVisited(${r.id})"
+                    ${r.visited ? 'disabled' : ''}
+                    >
+                    ${r.visited ? '✅来店済' : '来店'}
+                </button>
+            </td>
             <td>${r.name}</td>
             <td>${r.people}</td>
             <td>${displayDate}</td>
@@ -33,6 +39,34 @@ function renderTable(data) {
         tbody.appendChild(tr);
     });
 }
+
+async function markVisited(id) {
+    try {
+        const res = await fetch(
+            `https://unafujireservation.vercel.app/api/reserve`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+            id: id,
+            visited: true
+            })
+        }
+        );
+        if (!res.ok) {
+            throw new Error("更新失敗");
+            }  
+        alert("来店済みにしました");
+        // 一覧再読み込み
+        loadReservations();
+
+        } catch (err) {
+        console.error(err);
+        alert("更新に失敗しました");
+        }
+    }
 
 // 並べ替え処理
 document.getElementById("sort-select").addEventListener("change", (e) => {

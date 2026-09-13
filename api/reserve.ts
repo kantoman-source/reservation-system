@@ -15,6 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         TO_CHAR(date, 'YYYY-MM-DD') AS date,
         time,
         phone,
+        visited,
         created_at
       FROM reservations
       ORDER BY created_at DESC
@@ -98,6 +99,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({ success: true, id: result.rows[0].id });
   }
+  
+  // PATCH /api/reserve
+if (method === 'PATCH') {
+  const { id, visited } = body;
+
+  const result = await db.query(
+    `
+      UPDATE reservations
+      SET visited = $1
+      WHERE id = $2
+      RETURNING *
+    `,
+    [visited, id]
+    );
+
+  if (result.rows.length === 0) {
+    return res.status(404).json({
+      error: 'Reservation not found'
+      });
+    }
+
+  return res.status(200).json({
+  success: true,
+  reservation: result.rows[0]
+  });
+}
 
   return res.status(405).send("Method Not Allowed");
 }

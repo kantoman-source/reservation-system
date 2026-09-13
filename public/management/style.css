@@ -64,3 +64,28 @@ th {
 #reservation-table td:last-child {
     border-right: none;
 }
+
+.visited-btn {
+    background-color: #ff8c42;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.visited-btn:hover {
+    background-color: #ff7a22;
+}
+
+.visited-btn:active {
+    transform: scale(0.95);
+}
+
+.visited-btn:disabled {
+    background-color: #4caf50;
+    cursor: default;
+}
