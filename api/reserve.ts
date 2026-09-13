@@ -1,3 +1,4 @@
+import { VercelRequest, VercelResponse } from '@vercel/node';
 import { db } from './db'; // pg(Pool)
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

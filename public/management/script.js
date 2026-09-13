@@ -15,17 +15,20 @@ async function loadReservations() {
 function renderTable(data) {
     const tbody = document.querySelector("#reservation-table tbody");
     tbody.innerHTML = "";
-
     data.forEach(r => {
+        // 日付と時間を日本語形式に変換
+        const displayDate = new Date(r.date).toLocaleDateString("ja-JP");
+        const displayCreatedAt = new Date(r.created_at).toLocaleString("ja-JP", {timeZone: "Asia/Tokyo"});
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${r.id}</td>
             <td>${r.name}</td>
             <td>${r.people}</td>
-            <td>${r.date}</td>
+            <td>${displayDate}</td>
             <td>${r.time}</td>
             <td>${r.phone}</td>
-            <td>${r.created_at}</td>
+            <td>${displayCreatedAt}</td>
         `;
         tbody.appendChild(tr);
     });
