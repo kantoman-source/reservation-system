@@ -29,10 +29,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [year, month] = (query.month as string).split('-').map(Number);
 
     const result = await db.query(
-      "SELECT date, time FROM reservations WHERE EXTRACT(YEAR FROM date) = $1 AND EXTRACT(MONTH FROM date) = $2",
+      `
+      SELECT
+        TO_CHAR(date, 'YYYY-MM-DD') AS date, 
+        time
+        
+      FROM reservations
+      WHERE EXTRACT(YEAR FROM date) = $1
+        AND EXTRACT(MONTH FROM date) = $2
+      `,
       [year, month]
-    );
-
+      );
     return res.status(200).json(result.rows);
   }
 
