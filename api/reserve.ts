@@ -7,7 +7,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // GET /api/reserve → 全件
   if (method === 'GET' && !query.id && !query.date && !query.month) {
     const result = await db.query(
-      "SELECT * FROM reservations ORDER BY created_at DESC"
+      `
+      SELECT
+        id,
+        name,
+        people,
+        TO_CHAR(date, 'YYYY-MM-DD') AS date,
+        time,
+        phone,
+        created_at
+      FROM reservations
+      ORDER BY created_at DESC
+      `
     );
     return res.status(200).json(result.rows);
   }
@@ -33,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       SELECT
         TO_CHAR(date, 'YYYY-MM-DD') AS date, 
         time
-        
+
       FROM reservations
       WHERE EXTRACT(YEAR FROM date) = $1
         AND EXTRACT(MONTH FROM date) = $2
