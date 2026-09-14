@@ -88,7 +88,11 @@ document.getElementById("sort-select").addEventListener("change", (e) => {
 
 function sortReservations(key) {
     const sorted = [...reservationData];
-
+    
+    // 来店済みを下へ
+    if (a.visited !== b.visited) {
+        return a.visited ? 1 : -1;
+    }
     sorted.sort((a, b) => {
 
         if (key === "created_at") {
