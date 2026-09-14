@@ -91,5 +91,5 @@ th {
 }
 
 .visited-row {
-    background-color: #807d7d;
+    background-color: #807d7d !important;
 }

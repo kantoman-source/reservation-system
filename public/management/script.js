@@ -21,8 +21,8 @@ function renderTable(data) {
 
         const tr = document.createElement("tr");
         if (r.visited) {
-            tr.classList.add("visited");
-        }
+            tr.classList.add("visited-row");
+        } //visitedがtrueの場合に行にクラスを追加(灰色にするため)
         tr.innerHTML = `
             <td>             
                 <button class="visited-btn"
