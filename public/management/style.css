@@ -89,3 +89,7 @@ th {
     background-color: #4caf50;
     cursor: default;
 }
+
+.visited {
+    background-color: #807d7d;
+}

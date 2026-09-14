@@ -20,13 +20,15 @@ function renderTable(data) {
         const displayCreatedAt = new Date(r.created_at).toLocaleString("ja-JP", {timeZone: "Asia/Tokyo"});
 
         const tr = document.createElement("tr");
+        if (r.visited) {
+            tr.classList.add("visited");
+        }
         tr.innerHTML = `
             <td>             
                 <button class="visited-btn"
-                    onclick="markVisited(${r.id})"
-                    ${r.visited ? 'disabled' : ''}
+                    onclick="markVisited(${r.id}, ${r.visited})"
                     >
-                    ${r.visited ? '✅来店済' : '来店'}
+                    ${r.visited ? '来店取消' : '来店'}
                 </button>
             </td>
             <td>${r.name}</td>
@@ -40,7 +42,13 @@ function renderTable(data) {
     });
 }
 
-async function markVisited(id) {
+async function markVisited(id, visited) {
+    const message = visited 
+        ? "来店済みを取り消しますか？" 
+        : "来店済みにしますか？";
+    if (!confirm(message)) {
+        return;
+    }
     try {
         const res = await fetch(
             `https://unafujireservation.vercel.app/api/reserve`,
@@ -51,14 +59,18 @@ async function markVisited(id) {
             },
             body: JSON.stringify({
             id: id,
-            visited: true
+            visited: !visited
             })
         }
         );
         if (!res.ok) {
             throw new Error("更新失敗");
             }  
-        alert("来店済みにしました");
+        alert(
+            visited
+                ? "来店済みを取り消しました"
+                : "来店済みにしました"
+        );
         // 一覧再読み込み
         loadReservations();
 
