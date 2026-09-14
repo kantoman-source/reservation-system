@@ -89,11 +89,9 @@ document.getElementById("sort-select").addEventListener("change", (e) => {
 function sortReservations(key) {
     const sorted = [...reservationData];
     
-    // 来店済みを下へ
-    if (a.visited !== b.visited) {
-        return a.visited ? 1 : -1;
-    }
     sorted.sort((a, b) => {
+        if (!a.visited && b.visited) return -1;
+        if (a.visited && !b.visited) return 1;
 
         if (key === "created_at") {
             // 予約完了日時順（新しい → 古い）
@@ -116,7 +114,7 @@ function sortReservations(key) {
 
             return adt - bdt;  // 昇順（古い → 新しい）
         }
-
+        return 0;
     });
 
     renderTable(sorted);
