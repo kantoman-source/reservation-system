@@ -199,7 +199,7 @@ loadReservations();
 document.getElementById("sort-select").value = "datetime";
 sortReservations("datetime");
 
-// 削除モード切替
+// 削除モードON
 document
 .getElementById("delete-mode-btn")
 .addEventListener("click", () => {
@@ -221,5 +221,40 @@ document
 
     sortReservations(
     document.getElementById("sort-select").value
+    );
+});
+
+// 削除モードOFF
+// キャンセル
+document
+.getElementById("cancel-delete-btn")
+.addEventListener("click", () => {
+
+    // 削除モード解除
+    deleteMode = false;
+
+    // チェック状態リセット
+    selectedIds = [];
+
+    // ボタン表示を元に戻す
+    document.getElementById(
+        "delete-mode-btn"
+    ).style.display = "inline-block";
+
+    document.getElementById(
+        "cancel-delete-btn"
+    ).style.display = "none";
+
+    document.getElementById(
+        "delete-selected-btn"
+    ).style.display = "none";
+
+    document.getElementById(
+        "delete-selected-btn"
+    ).textContent = "0件削除";
+
+    // テーブルを再描画
+    sortReservations(
+        document.getElementById("sort-select").value
     );
 });
