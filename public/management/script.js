@@ -1,5 +1,6 @@
-let reservationData = []; // 取得したデータを保持
-
+let reservationData = [];
+let deleteMode = false;
+let selectedIds = [];
 // 初期ロード
 async function loadReservations() {
     const res = await fetch("https://unafujireservation.vercel.app/api/reserve");
@@ -24,13 +25,43 @@ function renderTable(data) {
             tr.classList.add("visited-row");
         } //visitedがtrueの場合に行にクラスを追加(灰色にするため)
         tr.innerHTML = `
-            <td>             
-                <button class="visited-btn"
-                    onclick="markVisited(${r.id}, ${r.visited})"
-                    >
-                    ${r.visited ? '来店取消' : '来店'}
-                </button>
+            ${
+                deleteMode
+                    ? `
+                    <td>
+                        <input
+                            type="checkbox"
+                            class="delete-check"
+                            data-id="${r.id}"
+                            ${
+                                selectedIds.includes(r.id)
+                                    ? "checked"
+                                    : ""
+                            }
+                        >
+                    </td>
+                    `
+                    : ""
+            }
+            <td>
+                ${
+                    deleteMode
+                        ? ""
+                        : `
+                        <button
+                            class="visited-btn"
+                            onclick="markVisited(${r.id}, ${r.visited})"
+                        >
+                            ${
+                                r.visited
+                                    ? "来店取消"
+                                    : "来店"
+                            }
+                        </button>
+                        `
+                }
             </td>
+
             <td>${r.name}</td>
             <td>${r.people}</td>
             <td>${displayDate}</td>
@@ -40,11 +71,52 @@ function renderTable(data) {
         `;
         tbody.appendChild(tr);
     });
+
+    document.getElementById("select-header").style.display =
+        deleteMode ? "" : "none";
+
+    document
+        .querySelectorAll(".delete-check")
+        .forEach((checkbox) => {
+
+            checkbox.addEventListener(
+                "change",
+                (e) => {
+
+                    const id =
+                        Number(
+                            e.target.dataset.id
+                        );
+
+                    if (e.target.checked) {
+
+                        if (
+                            !selectedIds.includes(id)
+                        ) {
+                            selectedIds.push(id);
+                        }
+
+                    } else {
+
+                        selectedIds =
+                            selectedIds.filter(
+                                x => x !== id
+                            );
+
+                    }
+
+                    document.getElementById(
+                        "delete-selected-btn"
+                    ).textContent =
+                        `${selectedIds.length}件削除`;
+                }
+            );
+        });
 }
 
 async function markVisited(id, visited) {
-    const message = visited 
-        ? "来店済みを取り消しますか？" 
+    const message = visited
+        ? "来店済みを取り消しますか？"
         : "来店済みにしますか？";
     if (!confirm(message)) {
         return;
@@ -52,20 +124,20 @@ async function markVisited(id, visited) {
     try {
         const res = await fetch(
             `https://unafujireservation.vercel.app/api/reserve`,
-        {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-            id: id,
-            visited: !visited
-            })
-        }
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    id: id,
+                    visited: !visited
+                })
+            }
         );
         if (!res.ok) {
             throw new Error("更新失敗");
-            }  
+        }
         alert(
             visited
                 ? "来店済みを取り消しました"
@@ -74,11 +146,11 @@ async function markVisited(id, visited) {
         // 一覧再読み込み
         loadReservations();
 
-        } catch (err) {
+    } catch (err) {
         console.error(err);
         alert("更新に失敗しました");
-        }
     }
+}
 
 // 並べ替え処理
 document.getElementById("sort-select").addEventListener("change", (e) => {
@@ -88,7 +160,7 @@ document.getElementById("sort-select").addEventListener("change", (e) => {
 
 function sortReservations(key) {
     const sorted = [...reservationData];
-    
+
     sorted.sort((a, b) => {
         if (!a.visited && b.visited) return -1;
         if (a.visited && !b.visited) return 1;
@@ -126,3 +198,29 @@ loadReservations();
 // ▼ デフォルトを日時順にする
 document.getElementById("sort-select").value = "datetime";
 sortReservations("datetime");
+
+// 削除モード切替
+document
+.getElementById("delete-mode-btn")
+.addEventListener("click", () => {
+
+    deleteMode = true;
+    selectedIds = [];
+
+    document.getElementById(
+        "delete-mode-btn"
+    ).style.display = "none";
+
+    document.getElementById(
+        "cancel-delete-btn"
+    ).style.display = "inline-block";
+
+    document.getElementById(
+        "delete-selected-btn"
+    ).style.display = "inline-block";
+
+    sortReservations(
+    document.getElementById("sort-select").value
+    );
+});
+`

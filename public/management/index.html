@@ -20,11 +20,16 @@
                 <option value="created_at">予約完了日時順</option>
                 <option value="datetime">日時順</option>
             </select>
+            <button id="delete-mode-btn">削除</button>
+            <button id="delete-selected-btn" style="display:none;">選択した0件を削除</button>
+            <button id="cancel-delete-btn" style="display:none;">キャンセル</button>
         </div>
 
         <table id="reservation-table">
             <thead>
                 <tr>
+                    <th id="select-header" style="display:none;">
+                            選択</th>
                     <th>来店</th>
                     <th>名前</th>
                     <th>人数</th>
