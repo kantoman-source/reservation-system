@@ -223,4 +223,3 @@ document
     document.getElementById("sort-select").value
     );
 });
-`
