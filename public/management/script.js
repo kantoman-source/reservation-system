@@ -5,10 +5,9 @@ let selectedIds = [];
 async function loadReservations() {
     const res = await fetch("https://unafujireservation.vercel.app/api/reserve");
     reservationData = await res.json();
-    renderTable(reservationData);
 
-    // ▼ デフォルトを日時順にする（古い → 新しい）
-    sortReservations("datetime");
+    // 日時順でカレンダー描画（古い → 新しい）(この関数内でrenderTableも呼ばれる)
+    sortReservations(document.getElementById("sort-select").value);
 }
 
 // テーブル描画
@@ -192,12 +191,19 @@ function sortReservations(key) {
     renderTable(sorted);
 }
 
+
+
+
+/////////実行!!!////////////
+///////////////////////////
+///////////////////////////
+// プルダウンの最初の表示を日時順にする
+document.getElementById("sort-select").value = "datetime";
 // 初期実行
 loadReservations();
 
-// ▼ デフォルトを日時順にする
-document.getElementById("sort-select").value = "datetime";
-sortReservations("datetime");
+//////以下イベントハンドラ//////   
+//////////////////////////////
 
 // 削除モードON
 document
