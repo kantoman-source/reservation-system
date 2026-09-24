@@ -4,7 +4,7 @@ import { db } from './db'; // pg(Pool)
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method, query, body } = req;
 
-  // GET /api/reserve → 全件
+  // GET /api/reserve → 全件取得
   if (method === 'GET' && !query.id && !query.date && !query.month) {
     const result = await db.query(
       `
@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(result.rows);
   }
 
-  // GET /api/reserve?id=xxx
+  // GET /api/reserve?id=xxx idで一件取得
   if (method === 'GET' && query.id) {
     const result = await db.query(
       "SELECT * FROM reservations WHERE id = $1",
@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(result.rows[0]);
   }
 
-  // GET /api/reserve?month=2026-10
+  // GET /api/reserve?month=2026-10 のように、月単位で予約状況を取得
   if (method === 'GET' && query.month) {
     const [year, month] = (query.month as string).split('-').map(Number);
 
@@ -55,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(result.rows);
   }
 
-  // GET /api/reserve?date=2026-10-01
+  // GET /api/reserve?date=2026-10-01 日にちで一件取得
   if (method === 'GET' && query.date) {
     const date = query.date as string;
 
@@ -77,7 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(result);
   }
 
-  // POST /api/reserve
+  // POST /api/reserve　DBにポスト
   if (method === 'POST') {
     const { name, people, date, time, phone } = body;
 
@@ -100,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true, id: result.rows[0].id });
   }
   
-  // PATCH /api/reserve
+  // PATCH /api/reserve　ぱっちしょり
 if (method === 'PATCH') {
   const { id, visited } = body;
 
@@ -126,5 +126,29 @@ if (method === 'PATCH') {
   });
 }
 
-  return res.status(405).send("Method Not Allowed");
+ // DELETE /api/reserve
+// 複数削除
+if (method === 'DELETE') {
+
+  const { ids } = body;
+
+  if (!ids || ids.length === 0) {//ありえないけどね
+    return res.status(400).json({
+      error: 'No ids provided'
+    });
+  }
+  const result = await db.query(
+    `
+    DELETE FROM reservations
+    WHERE id = ANY($1::int[])
+    RETURNING *
+    `,
+    [ids]
+  );
+
+  return res.status(200).json({
+    success: true,
+    deletedCount: result.rows.length
+  });
 }
+  return res.status(405).send("Method Not Allowed");

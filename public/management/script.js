@@ -143,7 +143,7 @@ async function markVisited(id, visited) {
                 : "来店済みにしました"
         );
         // 一覧再読み込み
-        loadReservations();
+        await loadReservations();
 
     } catch (err) {
         console.error(err);
@@ -264,3 +264,70 @@ document
         document.getElementById("sort-select").value
     );
 });
+
+// 選択した予約を削除
+document
+    .getElementById("delete-selected-btn")
+    .addEventListener("click", async () => {
+
+        if (selectedIds.length === 0) {
+            alert("削除する予約を選択してください");
+            return;
+        }
+
+        const ok = confirm(
+            `${selectedIds.length}件削除しますか？`
+        );
+
+        if (!ok) {
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                "https://unafujireservation.vercel.app/api/reserve",
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        ids: selectedIds
+                    })
+                }
+            );
+
+            if (!res.ok) {
+                throw new Error("削除失敗");
+            }
+
+            alert(`${selectedIds.length}件削除しました`);
+
+            // 状態リセット
+            deleteMode = false;
+            selectedIds = [];
+
+            document.getElementById(
+                "delete-mode-btn"
+            ).style.display = "inline-block";
+
+            document.getElementById(
+                "cancel-delete-btn"
+            ).style.display = "none";
+
+            document.getElementById(
+                "delete-selected-btn"
+            ).style.display = "none";
+
+            document.getElementById(
+                "delete-selected-btn"
+            ).textContent = "0件削除";
+
+            // 再読込
+            await loadReservations();
+
+        } catch (err) {
+            console.error(err);
+            alert("削除に失敗しました");
+        }
+    });
