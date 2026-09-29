@@ -62,7 +62,7 @@ export default async function handler(
     return res.status(200).json(result.rows[0]);
   }
 
-  // GET /api/reserve?month=2026-10 のように、月単位で予約状況を取得
+  // GET /api/reserve?month=2026-10　月ごと
   if (method === 'GET' && query.month) {
     const [year, month] = (query.month as string)
       .split('-')
@@ -88,7 +88,7 @@ export default async function handler(
     return res.status(200).json(result.rows);
   }
 
-  // GET /api/reserve?date=2026-10-01 日にちで一件取得
+  // GET /api/reserve?date=2026-10-01　日にちで
   if (method === 'GET' && query.date) {
     const date = query.date as string;
 
