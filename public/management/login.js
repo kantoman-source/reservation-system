@@ -27,7 +27,7 @@ async function handleCredentialResponse(response) {
   try {
 
     const res = await fetch(
-      "/api/google_login.ts",
+      "/api/google_login",
       {
         method: "POST",
         headers: {
@@ -57,3 +57,16 @@ async function handleCredentialResponse(response) {
 
 window.handleCredentialResponse =
   handleCredentialResponse;
+
+  document
+  .getElementById("testLogin")
+  ?.addEventListener("click", () => {
+
+    sessionStorage.setItem(
+      "demoLogin",
+      "true"
+    );
+
+    window.location.href =
+      "/management/management_screen.html";
+  });
