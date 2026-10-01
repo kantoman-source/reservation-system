@@ -27,7 +27,7 @@ async function handleCredentialResponse(response) {
   try {
 
     const res = await fetch(
-      "/api/google-login.ts",
+      "/api/google_login.ts",
       {
         method: "POST",
         headers: {
