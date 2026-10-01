@@ -50,11 +50,9 @@ async function handleCredentialResponse(response) {
       "/management/management_screen.html";
 
   } catch (err) {
-
-    console.error(err);
-
-    alert("ログインエラー");
-  }
+        console.error(err);
+        alert(err.message || JSON.stringify(err));
+    }
 }
 
 window.handleCredentialResponse =
