@@ -10,9 +10,9 @@
 
   <title>管理画面ログイン</title>
 
-  <link
-    rel="stylesheet"
-    href=".//accounts.google.com/gsi/client"
+  <!-- Google Identity Services -->
+  <script
+    src="https://accounts.google.com/gsi/client"
     async
     defer
   ></script>
@@ -27,7 +27,7 @@
 
     <div
       id="g_id_onload"
-      data-client_id="ここにGoogleのClient IDを貼る"
+      data-client_id="593983773789-d17k34e1j2pkcsin1pfjvbutvd47olip.apps.googleusercontent.com"
       data-callback="handleCredentialResponse"
     ></div>
 
@@ -37,13 +37,15 @@
       data-size="large"
       data-theme="outline"
       data-text="signin_with"
+      data-shape="rectangular"
+      data-logo_alignment="left"
     ></div>
 
     <p id="message"></p>
 
   </div>
 
-  <script.jsscript>
+  <script src="./login.js"></script>
 
 </body>
 </html>

@@ -6,7 +6,11 @@ function parseJwt(token) {
     decodeURIComponent(
       atob(base64)
         .split("")
-        .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .map(
+          c =>
+            "%" +
+            ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+        )
         .join("")
     )
   );
@@ -43,7 +47,7 @@ async function handleCredentialResponse(response) {
     }
 
     window.location.href =
-      "/management/index.html";
+      "/management/management_screen.html";
 
   } catch (err) {
 
@@ -52,3 +56,6 @@ async function handleCredentialResponse(response) {
     alert("ログインエラー");
   }
 }
+
+window.handleCredentialResponse =
+  handleCredentialResponse;
