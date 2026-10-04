@@ -7,46 +7,44 @@ export default async function handler(
 ) {
 
   if (req.method !== "POST") {
-    return res
-      .status(405)
-      .json({
-        error: "Method Not Allowed"
-      });
+    return res.status(405).json({
+      error: "Method Not Allowed"
+    });
   }
 
   const { email } = req.body;
 
   if (!email) {
-    return res
-      .status(400)
-      .json({
-        error: "メールアドレスがありません"
-      });
+    return res.status(400).json({
+      error: "メールアドレスがありません"
+    });
   }
 
-  const result =
-    await db.query(
-      `
-      SELECT *
-      FROM management_users
-      WHERE email = $1
-      `,
-      [email]
-    );
+  const result = await db.query(
+    `
+    SELECT *
+    FROM management_users
+    WHERE email = $1
+    `,
+    [email]
+  );
 
   if (result.rows.length === 0) {
 
-    return res
-      .status(403)
-      .json({
-        error:
-          "管理者登録されていません"
-      });
+    return res.status(403).json({
+      error: "管理者登録されていません"
+    });
   }
 
-  return res
-    .status(200)
-    .json({
-      success: true
-    });
+  // 管理者Cookie発行
+  res.setHeader(
+    "Set-Cookie",
+    [
+      "admin_auth=true; Path=/; HttpOnly; Secure; SameSite=Strict"
+    ]
+  );
+
+  return res.status(200).json({
+    success: true
+  });
 }

@@ -53,13 +53,6 @@
   const thisYear = today.getFullYear();
   const thisMonth = today.getMonth() + 1;
 
-  // ▼ 空き状況 API（Vercel 用）
-  async function loadAvailability(date) {
-    const res = await fetch("https://unafujireservation.vercel.app/api/reserve?date=" + date);
-
-    return await res.json();
-  }
-
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth() + 1;
 
@@ -110,7 +103,9 @@
 
   // 月まとめAPI呼ぶ
   const monthStr = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
-  const reservations = await fetch(`https://unafujireservation.vercel.app/api/reserve?month=${monthStr}`)
+  const reservations = await fetch(
+    `https://unafujireservation.vercel.app/api/customer_api?month=${monthStr}`
+    )
   .then(res => res.json());
 
 
@@ -200,7 +195,7 @@
       alert("日付と時間を選択してください");
       return;
     }
-    const res = await fetch("https://unafujireservation.vercel.app/api/reserve", {
+    const res = await fetch("https://unafujireservation.vercel.app/api/customer_api", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)

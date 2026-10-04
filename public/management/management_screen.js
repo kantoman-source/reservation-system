@@ -3,7 +3,12 @@ let deleteMode = false;
 let selectedIds = [];
 // 初期ロード
 async function loadReservations() {
-    const res = await fetch("https://unafujireservation.vercel.app/api/reserve");
+    const res = await fetch(
+        "https://unafujireservation.vercel.app/api/management_api",
+        {
+            credentials: "include"
+        }
+    );
     reservationData = await res.json();
 
     // 日時順でカレンダー描画（古い → 新しい）(この関数内でrenderTableも呼ばれる)
@@ -122,8 +127,9 @@ async function markVisited(id, visited) {
     }
     try {
         const res = await fetch(
-            `https://unafujireservation.vercel.app/api/reserve`,
+            `https://unafujireservation.vercel.app/api/management_api`,
             {
+                credentials: "include",
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json"
@@ -197,6 +203,23 @@ function sortReservations(key) {
 /////////実行!!!////////////
 ///////////////////////////
 ///////////////////////////
+//ログインチェック
+(async () => {
+
+    const res = await fetch(
+        "/api/admin_check",
+        {
+            credentials: "include"
+        }
+    );
+
+    if (!res.ok) {
+
+        location.href =
+            "/management/login.html";
+    }
+
+})();
 // プルダウンの最初の表示を日時順にする
 document.getElementById("sort-select").value = "datetime";
 // 初期実行
@@ -285,8 +308,9 @@ document
 
         try {
             const res = await fetch(
-                "https://unafujireservation.vercel.app/api/reserve",
+                "https://unafujireservation.vercel.app/api/management_api",
                 {
+                    credentials: "include",
                     method: "DELETE",
                     headers: {
                         "Content-Type": "application/json"
