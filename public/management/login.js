@@ -58,15 +58,40 @@ async function handleCredentialResponse(response) {
 window.handleCredentialResponse =
   handleCredentialResponse;
 
-  document
-  .getElementById("testLogin")
-  ?.addEventListener("click", () => {
+document
+.getElementById("testLogin")
+?.addEventListener("click", async () => {
 
-    sessionStorage.setItem(
-      "demoLogin",
-      "true"
+  try {
+
+    const res = await fetch(
+      "/api/demo_login",
+      {
+        method: "POST",
+        credentials: "include"
+      }
     );
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      alert(
+        result.error ||
+        "デモログイン失敗"
+      );
+      return;
+    }
 
     window.location.href =
       "/management/management_screen.html";
-  });
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "デモログイン失敗"
+    );
+
+  }
+});
