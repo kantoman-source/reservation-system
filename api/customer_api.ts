@@ -1,20 +1,49 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { db } from "./db";
 
-const MANAGEMENT_ID = 1;
+  //slugからmanagement_idを取得
+async function getManagementIdFromSlug(
+  slug: string
+  ): Promise<number | null> {
+
+    const result = await db.query(
+      `
+      SELECT management_id
+      FROM management_users
+      WHERE slug = $1
+      `,
+      [slug]
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    return result.rows[0].management_id;
+}
 
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
 
-  const { method, query, body } = req;
+   const { method, query, body } = req;
 
   // ==========================
   // 月単位の予約状況取得
-  // GET /api/customer_api?month=2026-10
+  // GET /api/customer_api?month=2026-10&slug=yakitori_kanchan
   // ==========================
   if (method === "GET" && query.month) {
+
+    const slug = query.slug as string;
+    const management_id =
+    await getManagementIdFromSlug(slug);
+
+    if (!management_id) {
+      return res.status(404).json({
+      error: "shop not found"
+     });
+    }
 
     const [year, month] = (query.month as string)
       .split("-")
@@ -31,7 +60,7 @@ export default async function handler(
       AND EXTRACT(MONTH FROM date) = $3
       `,
       [
-        MANAGEMENT_ID,
+        management_id,
         year,
         month
       ]
@@ -53,8 +82,18 @@ export default async function handler(
       people,
       date,
       time,
-      phone
+      phone,
+      slug
     } = body;
+
+    const management_id =
+    await getManagementIdFromSlug(slug);
+
+    if (!management_id) {
+      return res.status(404).json({
+        error: "shop not found"
+      });
+    }
 
     const exists = await db.query(
       `
@@ -65,7 +104,7 @@ export default async function handler(
       AND time = $3
       `,
       [
-        MANAGEMENT_ID,
+        management_id,
         date,
         time
       ]
@@ -107,7 +146,7 @@ export default async function handler(
         date,
         time,
         phone,
-        MANAGEMENT_ID
+        management_id
       ]
     );
 

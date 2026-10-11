@@ -38,6 +38,12 @@
 </form>
 
 <script>
+// URLパラメータからslugを取得,APIに渡す
+// 例: ?slug=yakitori_kanchan
+const slug =
+  new URLSearchParams(location.search)
+    .get("slug");
+
   // 時間（縦軸）
   const hours = [];
   for (let h = 11; h <= 22; h++) {
@@ -104,8 +110,8 @@
   // 月まとめAPI呼ぶ
   const monthStr = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
   const reservations = await fetch(
-    `https://unafujireservation.vercel.app/api/customer_api?month=${monthStr}`
-    )
+    `https://unafujireservation.vercel.app/api/customer_api?month=${monthStr}&slug=${slug}`
+  )
   .then(res => res.json());
 
 
@@ -190,6 +196,7 @@
     formData.date = selectedDate;
     formData.time = selectedTime;
     formData.people = Number(formData.people);
+    formData.slug = slug;
 
     if (!selectedDate || !selectedTime) {
       alert("日付と時間を選択してください");
