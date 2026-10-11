@@ -40,9 +40,14 @@
 <script>
 // URLパラメータからslugを取得,APIに渡す
 // 例: ?slug=yakitori_kanchan
-const slug =
-  new URLSearchParams(location.search)
-    .get("slug");
+// /shop/yakitori_kanchan から取得
+const slug = window.location.pathname.split("/")[2];
+
+if (!slug) {
+  document.body.innerHTML =
+    "<h1>店舗が指定されていません</h1>";
+  throw new Error("slug missing");
+}
 
   // 時間（縦軸）
   const hours = [];
@@ -109,11 +114,17 @@ const slug =
 
   // 月まとめAPI呼ぶ
   const monthStr = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
-  const reservations = await fetch(
+  const response = await fetch(
     `https://unafujireservation.vercel.app/api/customer_api?month=${monthStr}&slug=${slug}`
-  )
-  .then(res => res.json());
+  );
 
+  if (!response.ok) {
+    table.innerHTML =
+      "<tr><td>店舗が見つかりません</td></tr>";
+    return;
+  }
+
+  const reservations = await response.json();
 
   // 予約を高速検索できるようにセット化
   const reservedSet = new Set(reservations.map(r => `${r.date}_${r.time}`));
@@ -210,7 +221,13 @@ const slug =
 
 
     const result = await res.json();
-    window.location.href = "https://unafujireservation.vercel.app/custumer/complete.html?id=" + result.id;
+
+    if (!res.ok) {
+      alert(result.error || "予約に失敗しました");
+      return; 
+    }
+
+  window.location.href ="https://unafujireservation.vercel.app/custumer/complete.html?id=" + result.id;
 
   });
 </script>
