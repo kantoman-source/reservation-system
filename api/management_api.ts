@@ -1,21 +1,21 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { db } from "./db";
-import { isAdmin } from "./auth";
-
-const MANAGEMENT_ID = 1;
+import { getSession} from "./auth";
 
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
 
-  // 管理者チェック
-  if (!isAdmin(req)) {
+  //google login チェック
+  const session = await getSession(req);
+  if (!session) {
     return res.status(401).json({
-      error: "Unauthorized"
+      ok:false
     });
   }
 
+  const MANAGEMENT_ID = session.management_id;
   const { method, query, body } = req;
 
   // ==========================

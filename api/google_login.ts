@@ -1,5 +1,12 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { db } from "./db";
+import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
+
+const client =
+  new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID
+  );
 
 export default async function handler(
   req: VercelRequest,
@@ -12,21 +19,37 @@ export default async function handler(
     });
   }
 
-  const { email } = req.body;
+  const { idToken } = req.body;
 
-  if (!email) {
+  if (!idToken) {
     return res.status(400).json({
-      error: "メールアドレスがありません"
+      error: "idTokenがありません"
     });
   }
+
+  const ticket = await client.verifyIdToken({
+    idToken,
+    audience:
+    process.env.GOOGLE_CLIENT_ID
+  });
+
+  const payload = ticket.getPayload();
+
+  if (!payload) {
+    return res.status(401).json({
+      error: "Google認証失敗"
+    });
+  }
+
+  const googleSub = payload.sub;
 
   const result = await db.query(
     `
     SELECT *
     FROM management_users
-    WHERE email = $1
+    WHERE google_sub = $1
     `,
-    [email]
+    [googleSub]
   );
 
   if (result.rows.length === 0) {
@@ -36,11 +59,36 @@ export default async function handler(
     });
   }
 
+  const managementId =
+  result.rows[0].management_id;
+
+  const token =
+  crypto.randomBytes(32).toString("hex");
+
+  await db.query(
+    `
+    INSERT INTO management_sessions
+    (
+      token,
+      management_id,
+      expires_at,
+      created_at
+    )
+    VALUES
+    (
+     $1,
+     $2,
+      NOW() + interval '30 days',
+     NOW()
+    )
+    `,
+  [token, managementId]
+  );
   // 管理者Cookie発行
   res.setHeader(
     "Set-Cookie",
     [
-      "admin_auth=true; Path=/; HttpOnly; Secure; SameSite=Strict"
+      `admin_token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict`
     ]
   );
 
