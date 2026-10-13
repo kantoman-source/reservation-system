@@ -20,6 +20,8 @@ export default async function handler(
   }
 
   const { idToken } = req.body;
+  
+  console.log("BODY", req.body);
 
   if (!idToken) {
     return res.status(400).json({
