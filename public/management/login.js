@@ -18,12 +18,6 @@ function parseJwt(token) {
 
 async function handleCredentialResponse(response) {
 
-  const user = parseJwt(response.credential);
-
-  console.log("Google User:", user);
-
-  const email = user.email;
-
   try {
 
     const res = await fetch(
@@ -34,7 +28,7 @@ async function handleCredentialResponse(response) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          email
+          idToken: response.credential
         })
       }
     );
