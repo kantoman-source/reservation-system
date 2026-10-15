@@ -57,7 +57,9 @@ export default async function handler(
   if (result.rows.length === 0) {
 
     return res.status(403).json({
-      error: "管理者登録されていません"
+      error: "管理者登録されていません",
+      email: payload.email,
+      google_sub: payload.sub
     });
   }
 
