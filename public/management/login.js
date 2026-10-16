@@ -53,7 +53,7 @@ window.handleCredentialResponse =
   handleCredentialResponse;
 
 document
-.getElementById("yakitoriLogin")
+.getElementById("testLoginYakitori")
 ?.addEventListener("click", async () => {
 
   const res = await fetch(
@@ -80,7 +80,7 @@ document
 });
 
 document
-.getElementById("yakinikuLogin")
+.getElementById("testLoginYakiniku")
 ?.addEventListener("click", async () => {
 
   const res = await fetch(
