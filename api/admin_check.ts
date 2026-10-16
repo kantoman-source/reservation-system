@@ -1,14 +1,13 @@
-import { VercelRequest, VercelResponse }
-from "@vercel/node";
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import { getSession } from "./auth";
 
-import { isAdmin } from "./auth";
-
-export default function handler(
+export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
+  const session = await getSession(req);
 
-  if (!isAdmin(req)) {
+  if (!session) {
     return res.status(401).json({
       ok: false
     });
