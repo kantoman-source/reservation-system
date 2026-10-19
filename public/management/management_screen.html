@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <title>予約管理画面</title>
@@ -7,29 +8,78 @@
 </head>
 
 <body>
+
     <header>
         <h1>予約一覧（管理画面）</h1>
+        <button id="settings-btn">⚙</button>
     </header>
+
+    <!-- 設定モーダル -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+
+            <span class="close">&times;</span>
+
+            <h2>店舗設定</h2>
+
+            <label for="table-count">卓数</label>
+            <input type="number" id="table-count" min="1">
+
+            <label for="seats-per-table">1卓あたり人数</label>
+            <input type="number" id="seats-per-table" min="1">
+
+            <label for="open-time">営業時間開始</label>
+            <input type="time" id="open-time">
+
+            <label for="close-time">営業時間終了</label>
+            <input type="time" id="close-time">
+
+            <label for="slot-duration">予約間隔（分）</label>
+            <input type="number" id="slot-duration" min="1">
+
+            <label for="stay-duration">滞在時間（分）</label>
+            <input type="number" id="stay-duration" min="1">
+
+            <h3>定休日</h3>
+
+            <div class="holiday-group">
+                <label><input type="checkbox" value="0"> 日</label>
+                <label><input type="checkbox" value="1"> 月</label>
+                <label><input type="checkbox" value="2"> 火</label>
+                <label><input type="checkbox" value="3"> 水</label>
+                <label><input type="checkbox" value="4"> 木</label>
+                <label><input type="checkbox" value="5"> 金</label>
+                <label><input type="checkbox" value="6"> 土</label>
+            </div>
+
+            <button id="save-settings">保存</button>
+
+        </div>
+    </div>
 
     <main>
 
-        <!-- 並べ替えプルダウン -->
         <div id="sort-area">
             <label for="sort-select">並べ替え：</label>
+
             <select id="sort-select">
                 <option value="created_at">予約完了日時順</option>
                 <option value="datetime">日時順</option>
             </select>
+
             <button id="delete-mode-btn">削除</button>
-            <button id="delete-selected-btn" style="display:none;">選択した0件を削除</button>
-            <button id="cancel-delete-btn" style="display:none;">キャンセル</button>
+            <button id="delete-selected-btn" style="display:none;">
+                選択した0件を削除
+            </button>
+            <button id="cancel-delete-btn" style="display:none;">
+                キャンセル
+            </button>
         </div>
 
         <table id="reservation-table">
             <thead>
                 <tr>
-                    <th id="select-header" style="display:none;">
-                            選択</th>
+                    <th id="select-header" style="display:none;">選択</th>
                     <th>来店</th>
                     <th>名前</th>
                     <th>人数</th>
@@ -39,12 +89,15 @@
                     <th>予約日時</th>
                 </tr>
             </thead>
+
             <tbody>
                 <!-- JSで埋め込む -->
             </tbody>
         </table>
+
     </main>
 
     <script src="management_screen.js"></script>
+
 </body>
 </html>

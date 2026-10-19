@@ -4,24 +4,35 @@ body {
     background: #f7f7f7;
 }
 
-header h1 {
+/* ---------- ヘッダー ---------- */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
+header h1 {
+    margin: 0;
 }
 
-th, td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+#settings-btn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background: #333;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
 }
 
-th {
-    background: #eee;
+#settings-btn:hover {
+    background: #555;
 }
+
+/* ---------- 並び替え ---------- */
 
 #sort-area {
     margin-bottom: 15px;
@@ -32,15 +43,36 @@ th {
     font-size: 14px;
 }
 
+/* ---------- テーブル ---------- */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th,
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #eee;
+}
+
 /* ストライプ表示 */
+
 #reservation-table tbody tr:nth-child(odd) {
     background-color: #f9f9f9;
 }
+
 #reservation-table tbody tr:nth-child(even) {
     background-color: #ffffff;
 }
 
-/* ヘッダーの区切り線 */
+/* ヘッダー */
+
 #reservation-table thead th {
     border-right: 2px solid #333;
     border-bottom: 2px solid #333;
@@ -48,22 +80,23 @@ th {
     background-color: #fafafa;
 }
 
-/* 最後の項目だけ右線を消す */
 #reservation-table thead th:last-child {
     border-right: none;
 }
 
-/* セルの区切り線 */
+/* セル */
+
 #reservation-table td {
     border-bottom: 1px solid #ccc;
     border-right: 1px solid #eee;
     padding: 8px;
 }
 
-/* 最後のセルだけ右線を消す */
 #reservation-table td:last-child {
     border-right: none;
 }
+
+/* ---------- 来店ボタン ---------- */
 
 .visited-btn {
     background-color: #ff8c42;
@@ -92,4 +125,90 @@ th {
 
 .visited-row {
     background-color: #807d7d !important;
+}
+
+/* ---------- モーダル ---------- */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    width: 450px;
+    max-width: 90%;
+
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+    margin: 0 0 10px;
+}
+
+.modal-content input[type="number"],
+.modal-content input[type="time"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.close {
+    align-self: flex-end;
+    font-size: 26px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* ---------- 定休日 ---------- */
+
+.holiday-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.holiday-group label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #f3f3f3;
+}
+
+/* ---------- 保存ボタン ---------- */
+
+#save-settings {
+    margin-top: 10px;
+    padding: 10px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #4caf50;
+    color: white;
+
+    font-size: 15px;
+    cursor: pointer;
+}
+
+#save-settings:hover {
+    background: #449d48;
 }
