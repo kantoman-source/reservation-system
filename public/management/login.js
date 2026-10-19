@@ -53,39 +53,55 @@ window.handleCredentialResponse =
   handleCredentialResponse;
 
 document
-.getElementById("testLogin")
+.getElementById("testLoginYakitori")
 ?.addEventListener("click", async () => {
 
-  try {
-
-    const res = await fetch(
-      "/api/demo_login",
-      {
-        method: "POST",
-        credentials: "include"
-      }
-    );
-
-    const result = await res.json();
-
-    if (!res.ok) {
-      alert(
-        result.error ||
-        "デモログイン失敗"
-      );
-      return;
+  const res = await fetch(
+    "/api/demo_login",
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        managementId: 1
+      })
     }
+  );
 
-    window.location.href =
-      "/management/management_screen.html";
-
-  } catch (err) {
-
-    console.error(err);
-
-    alert(
-      "デモログイン失敗"
-    );
-
+  if (!res.ok) {
+    alert("ログイン失敗");
+    return;
   }
+
+  location.href =
+    "/management/management_screen.html";
+});
+
+document
+.getElementById("testLoginYakiniku")
+?.addEventListener("click", async () => {
+
+  const res = await fetch(
+    "/api/demo_login",
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        managementId: 2
+      })
+    }
+  );
+
+  if (!res.ok) {
+    alert("ログイン失敗");
+    return;
+  }
+
+  location.href =
+    "/management/management_screen.html";
 });
