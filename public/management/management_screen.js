@@ -197,7 +197,129 @@ function sortReservations(key) {
     renderTable(sorted);
 }
 
+async function saveSettings() {
 
+    const holidays = [
+        ...document.querySelectorAll(
+            ".holiday-group input:checked"
+        )
+    ].map(cb => Number(cb.value));
+
+    const data = {
+
+        table_count: Number(
+            document.getElementById("table-count").value
+        ),
+
+        seats_per_table: Number(
+            document.getElementById("seats-per-table").value
+        ),
+
+        open_time:
+            document.getElementById("open-time").value,
+
+        close_time:
+            document.getElementById("close-time").value,
+
+        slot_duration: Number(
+            document.getElementById("slot-duration").value
+        ),
+
+        stay_duration: Number(
+            document.getElementById("stay-duration").value
+        ),
+
+        holidays
+    };
+
+    try {
+
+        const res = await fetch(
+            "/api/shop_settings_api",
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+                body: JSON.stringify(data)
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error();
+        }
+
+        alert("設定を保存しました");
+
+        modal.style.display = "none";
+
+    } catch (err) {
+
+        console.error(err);
+        alert("保存に失敗しました");
+
+    }
+}
+
+async function loadSettings() {
+
+    try {
+
+        const res = await fetch(
+            "/api/shop_settings_api",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error("取得失敗");
+        }
+
+        const setting = await res.json();
+
+        if (!setting) {
+            return;
+        }
+
+        document.getElementById("table-count").value =
+            setting.table_count ?? 1;
+
+        document.getElementById("seats-per-table").value =
+            setting.seats_per_table ?? 4;
+
+        document.getElementById("open-time").value =
+            setting.open_time ?? "11:00";
+
+        document.getElementById("close-time").value =
+            setting.close_time ?? "22:00";
+
+        document.getElementById("slot-duration").value =
+            setting.slot_duration ?? 60;
+
+        document.getElementById("stay-duration").value =
+            setting.stay_duration ?? 60;
+
+        document
+            .querySelectorAll(".holiday-group input")
+            .forEach(cb => {
+
+                cb.checked =
+                    setting.holidays?.includes(
+                        Number(cb.value)
+                    ) || false;
+
+            });
+    } catch (err) {
+
+        console.error(err);
+        alert("設定の取得に失敗しました");
+
+    }
+}
 
 
 /////////実行!!!////////////
@@ -355,11 +477,14 @@ document
             alert("削除に失敗しました");
         }
     });
+
+
 const modal = document.getElementById("settings-modal");
 const openBtn = document.getElementById("settings-btn");
 const closeBtn = document.querySelector(".close");
 
-openBtn.addEventListener("click", () => {
+openBtn.addEventListener("click", async () => {
+    await loadSettings();
     modal.style.display = "flex";
 });
 
@@ -372,3 +497,6 @@ window.addEventListener("click", (e) => {
         modal.style.display = "none";
     }
 });
+
+document.getElementById("save-settings")
+.addEventListener("click", saveSettings);
