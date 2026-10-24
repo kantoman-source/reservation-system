@@ -1,35 +1,39 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { db } from "./db";
 import { getSession } from "./auth";
+import { getManagementIdFromSlug } from "./shop_from_slug";
 
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  // ログインチェック
-  const session = await getSession(req);
 
-  if (!session) {
-    return res.status(401).json({
-      ok: false
-    });
-  }
-
-  const MANAGEMENT_ID = session.management_id;
-  const { method, body } = req;
+  const { method, body, query } = req;
 
   // ==========================
   // 設定取得
   // GET /api/shop_settings_api
   // ==========================
   if (method === "GET") {
+    const slug = query.slug as string;
+    const management_id = await getManagementIdFromSlug(slug);
+    if (!management_id) {
+      return res.status(404).json({
+      error: "shop not found"
+      });
+    }
     const result = await db.query(
       `
-      SELECT *
+      SELECT
+        seats_per_table,
+        table_count,
+        open_time,
+        close_time,
+        holidays
       FROM shop_settings
       WHERE management_id = $1
       `,
-      [MANAGEMENT_ID]
+      [management_id]
     );
 
     return res.status(200).json(
@@ -42,6 +46,14 @@ export default async function handler(
   // POST /api/shop_settings_api
   // ==========================
   if (method === "POST") {
+  // ログインチェック
+  const session = await getSession(req);
+  if (!session) {
+    return res.status(401).json({
+      ok: false
+    });
+  }
+
     const {
       table_count,
       seats_per_table,
@@ -79,7 +91,7 @@ export default async function handler(
       RETURNING *
       `,
       [
-        MANAGEMENT_ID,
+        session.management_id,
         table_count,
         seats_per_table,
         open_time,

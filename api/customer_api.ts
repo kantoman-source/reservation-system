@@ -1,26 +1,6 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { db } from "./db";
-
-  //slugからmanagement_idを取得
-async function getManagementIdFromSlug(
-  slug: string
-  ): Promise<number | null> {
-
-    const result = await db.query(
-      `
-      SELECT management_id
-      FROM management_users
-      WHERE slug = $1
-      `,
-      [slug]
-    );
-
-    if (result.rows.length === 0) {
-      return null;
-    }
-
-    return result.rows[0].management_id;
-}
+import { getManagementIdFromSlug } from "./shop_from_slug";
 
 export default async function handler(
   req: VercelRequest,
@@ -116,6 +96,24 @@ export default async function handler(
       return res.status(409).json({
         error: "その日時はすでに予約済みです"
       });
+    }
+
+    const settingResult = await db.query(
+    `
+    SELECT seats_per_table
+    FROM shop_settings
+    WHERE management_id = $1
+    `,
+    [management_id]
+    );
+
+    const maxPeople = settingResult.rows[0]?.seats_per_table ?? 4;
+
+    if (people > maxPeople) {
+      return res.status(400).json({
+      error: "人数が上限を超えています"
+      });
+
     }
 
     const result = await db.query(
