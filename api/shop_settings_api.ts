@@ -1,162 +1,98 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { db } from "./db";
-import { getSession} from "./auth";
+import { getSession } from "./auth";
 
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-
-  //google login チェック
+  // ログインチェック
   const session = await getSession(req);
+
   if (!session) {
     return res.status(401).json({
-      ok:false
+      ok: false
     });
   }
 
   const MANAGEMENT_ID = session.management_id;
-  const { method, query, body } = req;
+  const { method, body } = req;
 
   // ==========================
-  // 予約一覧取得
-  // GET /api/management_api
+  // 設定取得
+  // GET /api/shop_settings_api
   // ==========================
-  if (method === "GET" && !query.id) {
-
+  if (method === "GET") {
     const result = await db.query(
       `
-      SELECT
-        id,
-        management_id,
-        name,
-        people,
-        TO_CHAR(date, 'YYYY-MM-DD') AS date,
-        time,
-        phone,
-        visited,
-        created_at
-      FROM reservations
+      SELECT *
+      FROM shop_settings
       WHERE management_id = $1
-      ORDER BY created_at DESC
       `,
       [MANAGEMENT_ID]
     );
 
     return res.status(200).json(
-      result.rows
+      result.rows[0] || null
     );
   }
 
   // ==========================
-  // 個別予約取得
-  // GET /api/management_api?id=1
+  // 設定保存
+  // POST /api/shop_settings_api
   // ==========================
-  if (method === "GET" && query.id) {
-
-    const result = await db.query(
-      `
-      SELECT *
-      FROM reservations
-      WHERE id = $1
-      AND management_id = $2
-      `,
-      [
-        query.id,
-        MANAGEMENT_ID
-      ]
-    );
-
-    if (result.rows.length === 0) {
-
-      return res.status(404).json({
-        error: "Reservation not found"
-      });
-
-    }
-
-    return res.status(200).json(
-      result.rows[0]
-    );
-  }
-
-  // ==========================
-  // 来店済み更新
-  // PATCH /api/management_api
-  // ==========================
-  if (method === "PATCH") {
-
+  if (method === "POST") {
     const {
-      id,
-      visited
+      table_count,
+      seats_per_table,
+      open_time,
+      close_time,
+      slot_duration,
+      stay_duration,
+      holidays
     } = body;
 
     const result = await db.query(
       `
-      UPDATE reservations
-      SET visited = $1
-      WHERE id = $2
-      AND management_id = $3
+      INSERT INTO shop_settings (
+        management_id,
+        table_count,
+        seats_per_table,
+        open_time,
+        close_time,
+        slot_duration,
+        stay_duration,
+        holidays
+      )
+      VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8
+      )
+      ON CONFLICT (management_id)
+      DO UPDATE SET
+        table_count = EXCLUDED.table_count,
+        seats_per_table = EXCLUDED.seats_per_table,
+        open_time = EXCLUDED.open_time,
+        close_time = EXCLUDED.close_time,
+        slot_duration = EXCLUDED.slot_duration,
+        stay_duration = EXCLUDED.stay_duration,
+        holidays = EXCLUDED.holidays
       RETURNING *
       `,
       [
-        visited,
-        id,
-        MANAGEMENT_ID
-      ]
-    );
-
-    if (result.rows.length === 0) {
-
-      return res.status(404).json({
-        error: "Reservation not found"
-      });
-
-    }
-
-    return res.status(200).json({
-      success: true,
-      reservation:
-        result.rows[0]
-    });
-  }
-
-  // ==========================
-  // 予約削除
-  // DELETE /api/management_api
-  // ==========================
-  if (method === "DELETE") {
-
-    const { ids } = body;
-
-    if (
-      !ids ||
-      ids.length === 0
-    ) {
-
-      return res.status(400).json({
-        error: "No ids provided"
-      });
-
-    }
-
-    const result = await db.query(
-      `
-      DELETE FROM reservations
-      WHERE id = ANY($1::int[])
-      AND management_id = $2
-      RETURNING *
-      `,
-      [
-        ids,
-        MANAGEMENT_ID
+        MANAGEMENT_ID,
+        table_count,
+        seats_per_table,
+        open_time,
+        close_time,
+        slot_duration,
+        stay_duration,
+        holidays
       ]
     );
 
     return res.status(200).json({
       success: true,
-      deletedCount:
-        result.rows.length
+      settings: result.rows[0]
     });
   }
 
