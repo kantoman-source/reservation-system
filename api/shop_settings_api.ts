@@ -16,11 +16,22 @@ export default async function handler(
   // ==========================
   if (method === "GET") {
     const slug = query.slug as string;
-    const management_id = await getManagementIdFromSlug(slug);
-    if (!management_id) {
-      return res.status(404).json({
-      error: "shop not found"
-      });
+    let management_id: number | null = null;
+    if (query.slug) {
+      management_id = await getManagementIdFromSlug(slug);
+      if (!management_id) {
+        return res.status(404).json({
+        error: "shop not found"
+        });
+      } 
+    }
+    else {
+      management_id = Number(req.cookies.management_id);
+      if (!management_id) {
+        return res.status(401).json({
+        error: "unauthorized"
+        });
+      }
     }
     const result = await db.query(
       `
