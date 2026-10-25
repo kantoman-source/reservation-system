@@ -29,15 +29,17 @@ export default async function handler(
       .split("-")
       .map(Number);
 
-    const result = await db.query(
+    const reservations_cnt = await db.query(
       `
       SELECT
         TO_CHAR(date, 'YYYY-MM-DD') AS date,
-        time
+        time,
+        COUNT(*) AS count
       FROM reservations
       WHERE management_id = $1
       AND EXTRACT(YEAR FROM date) = $2
       AND EXTRACT(MONTH FROM date) = $3
+      GROUP BY date, time
       `,
       [
         management_id,
@@ -46,8 +48,16 @@ export default async function handler(
       ]
     );
 
+    const countMap: Record<string, number> = {};
+
+    for (const row of reservations_cnt.rows) {
+      countMap[
+      `${row.date}_${row.time}`
+      ] = Number(row.count);
+    }
+
     return res.status(200).json(
-      result.rows
+      countMap
     );
   }
 
@@ -75,7 +85,7 @@ export default async function handler(
       });
     }
 
-    const exists = await db.query(
+    const reservations_cnt = await db.query(
       `
       SELECT COUNT(*) AS c
       FROM reservations
@@ -90,17 +100,11 @@ export default async function handler(
       ]
     );
 
-    if (
-      Number(exists.rows[0].c) > 0
-    ) {
-      return res.status(409).json({
-        error: "その日時はすでに予約済みです"
-      });
-    }
-
     const settingResult = await db.query(
     `
-    SELECT seats_per_table
+    SELECT 
+      seats_per_table,
+      table_count
     FROM shop_settings
     WHERE management_id = $1
     `,
@@ -108,12 +112,20 @@ export default async function handler(
     );
 
     const maxPeople = settingResult.rows[0]?.seats_per_table ?? 4;
+    const tableCount = settingResult.rows[0]?.table_count ?? 1;
 
     if (people > maxPeople) {
       return res.status(400).json({
-      error: "人数が上限を超えています"
+        error: "人数が上限を超えています"
       });
+    }
 
+    const currentReservations = Number(reservations_cnt.rows[0].c);
+
+    if (currentReservations >= tableCount) {
+      return res.status(409).json({
+        error: "満席です"
+      });
     }
 
     const result = await db.query(

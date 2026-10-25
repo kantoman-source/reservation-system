@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <title>予約ページ</title>
@@ -157,15 +158,18 @@ if (!slug) {
         status = "○";
       }
 
-      // ③ 予約がある場合は × に上書き
-      if (reservedSet.has(`${date}_${time}`)) {
-        status = "×";
+      const countMap = await response.json();
+      const tableCount = setting?.table_count ?? 1;
       }
 
       const className = status === "○" ? "available" : "unavailable";
       const clickable = status === "○" ? "slot" : "";
+          const reservationCount =
+            countMap[`${date}_${time}`] || 0;
 
-      row += `
+          if (reservationCount >= tableCount) {
+            status = "×";
+          }
         <td class="${clickable} ${className}"
             data-date="${date}"
             data-time="${time}">
@@ -233,4 +237,5 @@ if (!slug) {
 </script>
 
 </body>
+</html>
 </html>
