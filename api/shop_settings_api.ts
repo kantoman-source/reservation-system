@@ -26,12 +26,13 @@ export default async function handler(
       } 
     }
     else {
-      management_id = Number(req.cookies.management_id);
-      if (!management_id) {
+      const session = await getSession(req);
+      if (!session) {
         return res.status(401).json({
-        error: "unauthorized"
+          error: "unauthorized"
         });
       }
+      management_id = session.management_id;
     }
     const result = await db.query(
       `
