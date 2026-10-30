@@ -9,7 +9,7 @@
 
 <body>
 
-  <h1>予約ページ</h1>
+  <h1 id="shopName">予約ページ</h1>
 
   <h2>
     <button id="prevMonth">◀︎</button>
@@ -70,10 +70,22 @@
 ///////////////////////////////////////////
   //////初期化(初手実行)//////
     async function init() {
+    await loadShopInfo();
     await loadShopSetting();
     setupPeopleInput();
     updateMonthLabel();
     await generateCalendarTable();
+    }
+
+    //店舗情報読み込み(現状店名取得のみ)//
+    async function loadShopInfo() {
+      const res = await fetch(
+        `/api/shop_info_api?slug=${slug}`
+      );
+      
+      const shopInfo = await res.json();
+        document.title =`${shopInfo.shop_name} 予約ページ`;
+        document.getElementById("shopName").textContent =`${shopInfo.shop_name} 予約ページ`;
     }
 
   //設定情報読み込み//

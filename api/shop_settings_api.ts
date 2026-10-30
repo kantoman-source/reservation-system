@@ -17,6 +17,7 @@ export default async function handler(
   if (method === "GET") {
     const slug = query.slug as string;
     let management_id: number | null = null;
+  //客側画面から
     if (query.slug) {
       management_id = await getManagementIdFromSlug(slug);
       if (!management_id) {
@@ -25,6 +26,7 @@ export default async function handler(
         });
       } 
     }
+    //管理者側画面から
     else {
       const session = await getSession(req);
       if (!session) {
