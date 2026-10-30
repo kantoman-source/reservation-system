@@ -34,7 +34,7 @@ export default async function handler(
     const result = await db.query(
       `
       SELECT shop_name
-      FROM management_table
+      FROM management_users
       WHERE management_id = $1
       `,
       [management_id]
