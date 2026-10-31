@@ -114,6 +114,27 @@
       });
     }
 
+    //設定情報をもとに営業時間を作成
+    function generateHours() {
+      const result = [];
+      const [openH, openM] = setting.open_time.split(":").map(Number);
+      const [closeH, closeM] = setting.close_time.split(":").map(Number);
+      const interval = Number(setting.interval || 60);
+      let current = openH * 60 + openM;
+      const end = closeH * 60 + closeM;
+
+      while (current < end) {
+        const h = Math.floor(current / 60);
+        const m = current % 60;
+
+        result.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+
+        current += interval;
+      }
+
+      return result;
+    }
+
       // 月ラベル更新
     function updateMonthLabel() {
       document.getElementById("monthLabel").textContent =
@@ -189,6 +210,7 @@
       table.innerHTML = header;
 
       // 行（時間）
+      const hours = generateHours();
       for (const time of hours) {
         let row = `<tr><td>${time}</td>`;
 
