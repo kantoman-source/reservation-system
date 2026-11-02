@@ -121,7 +121,10 @@
       const [closeH, closeM] = setting.close_time.split(":").map(Number);
       const interval = Number(setting.interval || 60);
       let current = openH * 60 + openM;
-      const end = closeH * 60 + closeM;
+      let end = closeH * 60 + closeM;
+      if (end <= current) {
+        end += 24 * 60;
+    }
 
       while (current < end) {
         const h = Math.floor(current / 60);
